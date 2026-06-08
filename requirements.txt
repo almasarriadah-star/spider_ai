@@ -1,0 +1,18 @@
+# أساسية (المرحلة 1 — تشتغل بدون YOLO)
+requests
+numpy
+opencv-python
+pyyaml
+pandas
+streamlit
+folium
+streamlit-folium
+
+# تصدير تقرير PDF (مع دعم العربية)
+reportlab
+arabic-reshaper
+python-bidi
+matplotlib
+
+# اختيارية (المرحلة 2 — كشف الأعشاب بـ YOLO). ثقيلة؛ ثبّتها لما تجهّز نموذجك:
+# ultralytics

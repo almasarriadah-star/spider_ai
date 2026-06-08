@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>صور اختبار — Spider-AI</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+         background:#111; color:#eee; }
+  header { padding:14px 16px; background:#1b1b1b; position:sticky; top:0; z-index:5;
+           border-bottom:1px solid #333; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  p.hint { margin:0; font-size:13px; color:#aaa; }
+  .cat { padding:8px 16px 4px; font-size:15px; font-weight:700; }
+  .badge { font-size:11px; padding:2px 8px; border-radius:10px; margin-inline-start:6px; }
+  .green { background:#1f5e2a; } .orange { background:#7a4410; }
+  .red { background:#6e1d1d; } .gray { background:#444; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+          gap:8px; padding:8px 16px 20px; }
+  .card { background:#000; border-radius:10px; overflow:hidden; cursor:pointer;
+          border:1px solid #2a2a2a; }
+  .card img { width:100%; height:130px; object-fit:cover; display:block; background:#222; }
+  .card .lbl { font-size:12px; padding:6px 8px; color:#ccc; }
+  /* عرض ملء الشاشة عند النقر — وجّه كاميرا الروبوت على الشاشة */
+  #viewer { position:fixed; inset:0; background:#000; display:none;
+            align-items:center; justify-content:center; z-index:50; }
+  #viewer img { max-width:100%; max-height:100%; object-fit:contain; }
+  #viewer .x { position:fixed; top:10px; inset-inline-start:14px; font-size:30px;
+               color:#fff; background:rgba(0,0,0,.5); border-radius:8px;
+               width:46px; height:46px; line-height:46px; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🕷️ صور اختبار للكاميرا — Spider-AI</h1>
+  <p class="hint">افتح هذه الصفحة على الموبايل، انقر صورة لعرضها ملء الشاشة، ثم وجّه كاميرا الروبوت عليها.
+  الصور تُحمّل مباشرة من Wikimedia (مستقرّة)، وعند الفشل تُستعمل النسخة المحلية في <code>test_images/</code>.</p>
+</header>
+
+<div id="gallery"></div>
+
+<div id="viewer" onclick="this.style.display='none'">
+  <div class="x">✕</div><img id="viewerImg" src="" alt="">
+</div>
+
+<script>
+// لكل صورة: مصدر بعيد (Wikimedia) + بديل محلي. التصنيف يلوّن البادج.
+const DATA = [
+  { cat:"🟢 أوراق/محاصيل خضراء سليمة", badge:"green", items:[
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/a/ab/Crop_field%2C_Leyland_Green_-_geograph.org.uk_-_4015548.jpg", local:"test_images/healthy/green_crop_1.jpg", lbl:"حقل أخضر 1"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/5/5b/Young_crop_field_near_Cross_Green_-_geograph.org.uk_-_5400543.jpg", local:"test_images/healthy/green_crop_2.jpg", lbl:"محصول صغير أخضر"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/3/3a/Ivy_leaves%2C_Clandeboye_Wood_-_geograph.org.uk_-_1995558.jpg", local:"test_images/healthy/green_leaves_1.jpg", lbl:"أوراق خضراء قريبة"},
+  ]},
+  { cat:"🔴 أوراق مُجهَدة بالجفاف", badge:"red", items:[
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/2/24/Starr-101006-9340-Vaccinium_reticulatum-drought_stressed_leaves-Polipoli-Maui_%2824759265360%29.jpg", local:"test_images/drought/drought_leaves_1.jpg", lbl:"أوراق مجهدة 1"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/4/49/Starr-110926-8574-Santalum_haleakalae_var_haleakalae-drought_stressed_leaves-Front_Country_HNP-Maui_%2825022170091%29.jpg", local:"test_images/drought/drought_leaves_2.jpg", lbl:"أوراق مجهدة 2"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/a/a9/Degraded_plant_condition%2C_overgrazing_and_drought%2C_South_Dakota.jpg", local:"test_images/drought/drought_field_1.jpg", lbl:"حقل متدهور (جفاف)"},
+  ]},
+  { cat:"🌿 أعشاب ضارة (للمرحلة 2 / YOLO)", badge:"orange", items:[
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/1/17/Field_margin_with_weeds_-_geograph.org.uk_-_5539082.jpg", local:"test_images/weeds/weeds_1.jpg", lbl:"أعشاب على حافة حقل"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/9/95/Weeds_by_the_edge_of_field_-_geograph.org.uk_-_6890199.jpg", local:"test_images/weeds/weeds_2.jpg", lbl:"أعشاب 2"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/a/ae/Weeds_of_agricultural_land_-_geograph.org.uk_-_4049111.jpg", local:"test_images/weeds/weeds_3.jpg", lbl:"أعشاب أرض زراعية"},
+  ]},
+  { cat:"🟤 تربة جافة/متشقّقة", badge:"gray", items:[
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/e/e1/Drought.jpg", local:"test_images/dry_soil/dry_soil_1.jpg", lbl:"تربة جافة 1"},
+    {remote:"https://upload.wikimedia.org/wikipedia/commons/0/07/Dry_and_cracked_soil_-_geograph.org.uk_-_8131059.jpg", local:"test_images/dry_soil/dry_soil_2.jpg", lbl:"تربة متشقّقة"},
+  ]},
+];
+
+const g = document.getElementById("gallery");
+DATA.forEach(sec => {
+  const h = document.createElement("div");
+  h.className = "cat";
+  h.innerHTML = sec.cat + `<span class="badge ${sec.badge}">اختبار</span>`;
+  g.appendChild(h);
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  sec.items.forEach(it => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const img = document.createElement("img");
+    img.loading = "lazy";
+    img.src = it.remote;
+    img.onerror = () => { img.onerror = null; img.src = it.local; };  // بديل محلي
+    img.onclick = () => openViewer(img.src);
+    const lbl = document.createElement("div");
+    lbl.className = "lbl"; lbl.textContent = it.lbl;
+    card.appendChild(img); card.appendChild(lbl);
+    grid.appendChild(card);
+  });
+  g.appendChild(grid);
+});
+
+function openViewer(src){
+  document.getElementById("viewerImg").src = src;
+  document.getElementById("viewer").style.display = "flex";
+}
+</script>
+</body>
+</html>
