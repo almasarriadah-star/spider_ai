@@ -1,4 +1,4 @@
-# أساسية (المرحلة 1 — تشتغل بدون YOLO)
+# Core packages (Phase 1 - works without YOLO)
 requests
 numpy
 opencv-python
@@ -8,11 +8,11 @@ streamlit
 folium
 streamlit-folium
 
-# تصدير تقرير PDF (مع دعم العربية)
+# PDF report export (with Arabic support)
 reportlab
 arabic-reshaper
-python-bidi
+python-bidi==0.4.2
 matplotlib
 
-# اختيارية (المرحلة 2 — كشف الأعشاب بـ YOLO). ثقيلة؛ ثبّتها لما تجهّز نموذجك:
+# Optional (Phase 2 - weed detection with YOLO). Heavy; install when model is ready:
 # ultralytics
