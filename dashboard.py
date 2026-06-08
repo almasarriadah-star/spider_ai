@@ -230,18 +230,24 @@ with t_db:
     st.subheader("العينات المسجّلة")
     st.json(db.counts(db_path))
     rows = db.recent_samples(db_path, limit=500)
+    dfr = pd.DataFrame(rows) if rows else None
     if rows:
-        dfr = pd.DataFrame(rows)
-        st.dataframe(dfr, use_container_width=True, height=420)
-        cda, cdb = st.columns(2)
+        st.dataframe(dfr, use_container_width=True, height=380)
+    else:
+        st.info("لا عينات بعد — التقرير سيُولَّد لكنه سيكون فارغاً حتى تُخزَّن بيانات.")
+
+    # ── أزرار التصدير (تظهر دائماً) ──
+    st.markdown("##### تصدير")
+    cda, cdb = st.columns(2)
+    if rows:
         cda.download_button("⬇ تنزيل CSV", dfr.to_csv(index=False).encode("utf-8-sig"),
                             "spider_ai_samples.csv", "text/csv", use_container_width=True)
-        if cdb.button("📄 توليد تقرير PDF", use_container_width=True):
-            from report import generate_report
-            with st.spinner("جارٍ توليد التقرير…"):
-                st.session_state["pdf_report"] = generate_report(db_path, cfg)
     else:
-        st.info("لا عينات بعد.")
+        cda.button("⬇ تنزيل CSV", disabled=True, use_container_width=True)
+    if cdb.button("📄 توليد تقرير PDF", use_container_width=True):
+        from report import generate_report
+        with st.spinner("جارٍ توليد التقرير…"):
+            st.session_state["pdf_report"] = generate_report(db_path, cfg)
 
     if st.session_state.get("pdf_report"):
         st.download_button(
