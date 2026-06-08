@@ -78,7 +78,60 @@ if exist "download_test_images.py" (
 )
 echo.
 
-REM -- Done --
+REM -- 6) Verify installation --
+echo [6/6] Verifying installation...
+echo.
+
+echo Checking streamlit...
+python -c "import streamlit; print('  [OK] streamlit ' + streamlit.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] streamlit NOT found! Installing...
+    pip install streamlit --quiet
+)
+
+echo Checking opencv...
+python -c "import cv2; print('  [OK] opencv ' + cv2.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] opencv NOT found! Installing...
+    pip install opencv-python --quiet
+)
+
+echo Checking numpy...
+python -c "import numpy; print('  [OK] numpy ' + numpy.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] numpy NOT found! Installing...
+    pip install numpy --quiet
+)
+
+echo Checking pandas...
+python -c "import pandas; print('  [OK] pandas ' + pandas.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] pandas NOT found! Installing...
+    pip install pandas --quiet
+)
+
+echo Checking folium...
+python -c "import folium; print('  [OK] folium ' + folium.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] folium NOT found! Installing...
+    pip install folium --quiet
+)
+
+echo Checking requests...
+python -c "import requests; print('  [OK] requests ' + requests.__version__)" 2>nul
+if errorlevel 1 (
+    echo  [X] requests NOT found! Installing...
+    pip install requests --quiet
+)
+
+echo Checking yaml...
+python -c "import yaml; print('  [OK] pyyaml OK')" 2>nul
+if errorlevel 1 (
+    echo  [X] pyyaml NOT found! Installing...
+    pip install pyyaml --quiet
+)
+
+echo.
 echo ============================================
 echo    [OK] Setup complete!
 echo ============================================
